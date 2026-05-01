@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 const path = require('path') // ejs sathi
 const methodOverride = require('method-override') // convert post to put and delete
 const ejsMate = require('ejs-mate')
+const Listing = require("./models/listing.js")
 const ExpressError = require('./utils/ExpressErrors.js')
 const listingRouter = require('./routes/listing.js')
 const reviewRouter = require('./routes/review.js')
@@ -34,6 +35,7 @@ app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname,'/public')))
 
 const dbUrl = process.env.ATLASDB_URL
+// dbUrl = "mongodb://127.0.0.1:27017/wanderlust"
 
 main().then((res) =>{console.log('connect to database')})
 .catch((err)=>{console.log(err)})
@@ -66,9 +68,6 @@ const sessionOptions = {
     },
 }
 
-// app.get('/',(req,res)=>{
-//     res.send('fuck off')
-// })
 
 
 app.use(session(sessionOptions))
@@ -102,19 +101,32 @@ app.use((req,res,next)=>{
 })
 
 
-// app.get('/demouser',async(req,res)=>{
-//     let fakeUser = new User({
-//         email : "abc123@gmail.com",
-//         username : "chutiya"
-//     })
-//     let newUser =  await User.register(fakeUser,"chutiya")
-//     console.log(newUser)
-//     res.send(newUser)
-// })
+
+app.get('/listings/search',async(req,res)=>{
+    const {query} = req.query
+    if (!query || query.trim() === "") {
+        return res.redirect("/listings");
+    }
+    let textResults = await Listing.find({$text: { $search: query }});
+    let categoryResults = await Listing.find({ categories: query });
+    let combined = [...textResults, ...categoryResults];
+
+    let listings = Array.from(
+        new Map(combined.map(item => [item._id.toString(), item])).values()
+    );
+
+    if (listings.length === 0) {
+        req.flash('error', 'No listings found');
+        return res.redirect('/listings');
+    }
+    res.render("listings/index.ejs", { allListings: listings });
+})
 
 app.use("/listings", listingRouter)
 app.use("/listings/:id/reviews", reviewRouter)
 app.use("/", userRouter)
+
+
 
 
 

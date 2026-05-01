@@ -26,7 +26,11 @@ const listingSchema = new schema({
     owner : {
         type : schema.Types.ObjectId,
         ref : "User"
-    }
+    },
+    categories : [{
+        type : String,
+        enum : ["Trending","Rooms","Iconic Cities","Mountains","Castles","Amazing Pools","Camping","Farms","Arctic","Domes","Boats","Others"]
+    }]
 })
 
 listingSchema.post("findOneAndDelete",async(listing)=>{
@@ -36,6 +40,13 @@ listingSchema.post("findOneAndDelete",async(listing)=>{
 })
 
 
+listingSchema.index({
+  title: "text",
+  location: "text",
+  country: "text",
+  description: "text",
+  categories: "text"
+})
 const Listings = mongoose.model("Listings", listingSchema)
 module.exports = Listings
 

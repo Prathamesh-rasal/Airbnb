@@ -7,7 +7,13 @@ module.exports.listingSchema = Joi.object({
         location : Joi.string().required(),
         country : Joi.string().required(),
         price : Joi.number().required().min(0),
-        image : Joi.string().allow('',null)
+        image : Joi.string().allow('',null),
+        categories: Joi.array()
+        .items(
+            Joi.string().valid("Trending","Rooms","Iconic Cities","Mountains","Castles","Amazing Pools","Camping","Farms","Arctic","Domes","Boats","Others")
+        )
+        .min(1)
+        .required()
     }).required()
 })
 
