@@ -126,7 +126,9 @@ app.use("/listings", listingRouter)
 app.use("/listings/:id/reviews", reviewRouter)
 app.use("/", userRouter)
 
-
+app.get('/',(req,res)=>{
+    res.redirect("/listings");
+})
 
 
 
@@ -138,6 +140,8 @@ app.use((err,req,res,next)=>{
     let {statusCode=500,message="Something went wrong"} = err
     res.status(statusCode).render('listings/error.ejs',{message})
 })
+
+
 
 app.listen(8080,()=>{
     console.log("Server start")
